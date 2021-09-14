@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>301205f0-c87c-4590-989c-a8d38bb5f7df</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AppSettingsParser.fs" />
+    <Compile Include="WeatherForecast.fs" />
+    <Compile Include="CompositionRoot.fs" />
+    <Compile Include="Controllers\AccountsController.fs" />
+    <Compile Include="Controllers/WeatherForecastController.fs" />
+    <Compile Include="Startup.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Dockerfile" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WebApiTest.Domain\WebApiTest.Domain.fsproj" />
+    <ProjectReference Include="..\WebApiTest.Repositories.SqlServer\WebApiTest.Repositories.SqlServer.fsproj" />
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>
