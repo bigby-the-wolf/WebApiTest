@@ -1,0 +1,13 @@
+﻿version: "3.3"
+services:
+  mssql:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    container_name: mssql1
+    hostname: mssql
+    environment:
+      SA_PASSWORD: "Pass123!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    restart: unless-stopped    
+    ports:
+      - "11433:1433"

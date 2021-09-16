@@ -7,9 +7,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "WebApiTest.Domain", "WebApi
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "WebApiTest.Repositories.File", "WebApiTest.Repositories.File\WebApiTest.Repositories.File.fsproj", "{856798D3-9B30-4BA6-8DF5-326D0707BDCB}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "WebApiTest.Repositories.SqlServer", "WebApiTest.Repositories.SqlServer\WebApiTest.Repositories.SqlServer.fsproj", "{A741203F-8BF2-49B8-AD0F-4C37CEE26652}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "WebApiTest.WebApi", "WebApiTest.WebApi\WebApiTest.WebApi.fsproj", "{7BDA043F-F027-4DC0-8A9A-8EEC1CC996AA}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "WebApiTest.Repositories.SqlProvider", "WebApiTest.Repositories.SqlProvider\WebApiTest.Repositories.SqlProvider.fsproj", "{845143C9-D387-411C-9A12-E1A233AC8EB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,14 @@ Global
 		{856798D3-9B30-4BA6-8DF5-326D0707BDCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{856798D3-9B30-4BA6-8DF5-326D0707BDCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{856798D3-9B30-4BA6-8DF5-326D0707BDCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A741203F-8BF2-49B8-AD0F-4C37CEE26652}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A741203F-8BF2-49B8-AD0F-4C37CEE26652}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A741203F-8BF2-49B8-AD0F-4C37CEE26652}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A741203F-8BF2-49B8-AD0F-4C37CEE26652}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7BDA043F-F027-4DC0-8A9A-8EEC1CC996AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7BDA043F-F027-4DC0-8A9A-8EEC1CC996AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BDA043F-F027-4DC0-8A9A-8EEC1CC996AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BDA043F-F027-4DC0-8A9A-8EEC1CC996AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{845143C9-D387-411C-9A12-E1A233AC8EB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845143C9-D387-411C-9A12-E1A233AC8EB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845143C9-D387-411C-9A12-E1A233AC8EB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845143C9-D387-411C-9A12-E1A233AC8EB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,21 @@
+﻿version: "3.3"
+services:
+  web:    
+    container_name: web
+    build:      
+      context: ..
+      dockerfile: ./WebApiTest.WebApi/Dockerfile
+    #depends_on: [ mssql ]        
+    ports:
+      - "6060:60"
+  #mssql:
+  #  image: "mcr.microsoft.com/mssql/server:2019-latest"
+  #  container_name: mssql
+  #  hostname: mssql
+  #  environment:
+  #    SA_PASSWORD: "pass"
+  #    ACCEPT_EULA: "Y"
+  #    MSSQL_PID: "Developer"
+  #  restart: unless-stopped    
+  #  ports:
+  #    - "6061:61"
