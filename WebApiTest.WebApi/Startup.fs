@@ -1,32 +1,30 @@
-namespace WebApiTest.WebApi
+module WebApiTest.WebApi.Startup
 
-open System
-open System.Collections.Generic
-open System.Linq
-open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.HttpsPolicy;
-open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
+open Microsoft.Extensions.Logging
+open Giraffe
 
-type Startup(configuration: IConfiguration) =
-    member _.Configuration = configuration
+open WebApiTest.WebApi.Controllers
+open WebApiTest.WebApi.CompositionRoot
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    member _.ConfigureServices(services: IServiceCollection) =
-        // Add framework services.
-        services.AddControllers() |> ignore
+let webApp =
+    choose [
+        route "/ping"   >=> AccountsController.getAccountBalance
+        route "/pong"   >=> AccountsController.getAccountBalance2
+        route "/"       >=> htmlFile "/pages/index.html" ]
 
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
-        if (env.IsDevelopment()) then
-            app.UseDeveloperExceptionPage() |> ignore
-        app.UseHttpsRedirection()
-           .UseRouting()
-           .UseAuthorization()
-           .UseEndpoints(fun endpoints ->
-                endpoints.MapControllers() |> ignore
-            ) |> ignore
+type Startup(configuration : IConfiguration) =
+    member __.ConfigureServices (services : IServiceCollection) =
+        
+        configureDependencies configuration services |> ignore
+
+        services.AddGiraffe() |> ignore
+
+    member __.Configure (app : IApplicationBuilder)
+                        (env : IHostEnvironment)
+                        (loggerFactory : ILoggerFactory) =
+        // Add Giraffe to the ASP.NET Core pipeline
+        app.UseGiraffe webApp

@@ -41,9 +41,13 @@ type IAccountsService =
     abstract member Withdraw : amount:Decimal -> customer:Customer -> RatedAccount
     abstract member LoadTransactionHistory : customer:Customer -> Transaction seq
 
-let buildAccountsService loadAccountHistory saveTransaction =
+type IAccountsRepository =
+    abstract member GetAccountAndTransactions : owner:string -> (Guid * Transaction seq) option
+    abstract member WriteTransaction : accountId:Guid -> owner:string -> transaction:Transaction -> unit
+
+let buildAccountsService (accountsRepository:IAccountsRepository) =
     { new IAccountsService with
-        member this.LoadAccount(customer) =  loadAccount loadAccountHistory customer
-        member this.Deposit amount customer = deposit this.LoadAccount saveTransaction amount customer
-        member this.Withdraw amount customer = withdraw this.LoadAccount saveTransaction amount customer
-        member this.LoadTransactionHistory(customer) = loadTransactionHistory loadAccountHistory customer }
+        member this.LoadAccount(customer) =  loadAccount accountsRepository.GetAccountAndTransactions customer
+        member this.Deposit amount customer = deposit this.LoadAccount accountsRepository.WriteTransaction amount customer
+        member this.Withdraw amount customer = withdraw this.LoadAccount accountsRepository.WriteTransaction amount customer
+        member this.LoadTransactionHistory(customer) = loadTransactionHistory accountsRepository.GetAccountAndTransactions customer }
