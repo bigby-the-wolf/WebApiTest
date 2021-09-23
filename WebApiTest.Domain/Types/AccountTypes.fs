@@ -25,3 +25,4 @@ type RatedAccount =
         | Overdrawn account -> getter account
     /// Gets the current balance of the account.
     member this.Balance = this.GetField(fun a -> a.Balance)
+    member this.Id = this.GetField(fun a -> a.AccountId)

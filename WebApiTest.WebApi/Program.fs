@@ -7,14 +7,28 @@ open Giraffe
 
 open WebApiTest.WebApi.Controllers
 
-let webApp =
-    choose [
-        route "/ping"   >=> AccountsController.getAccountBalance
-        route "/"       >=> htmlFile "/pages/index.html" ]
+module WebApp =
+    let parsingError err = RequestErrors.BAD_REQUEST err
+
+    let webApp =
+        choose [
+            route "/ping"   >=> text "pong"
+
+            GET >=> choose [
+                subRoute "/accounts" (choose [
+                    route "/test" >=> text "yes"
+                    routef "/%s" AccountsController.getAccount
+                ])
+            ]
+
+            POST >=> route "/accounts/deposita" >=> bindJson<AccountsController.DepositPost> (validateModel AccountsController.depositInAccount)
+
+            RequestErrors.NOT_FOUND "Not Found"
+        ]
 
 let configureApp (app : IApplicationBuilder) =
     // Add Giraffe to the ASP.NET Core pipeline
-    app.UseGiraffe webApp
+    app.UseGiraffe WebApp.webApp
 
 let configureServices (services : IServiceCollection) =
     // Add Giraffe dependencies

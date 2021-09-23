@@ -44,19 +44,13 @@ let getAccountAndTransactions (connectionString:string) (owner:string) : (Guid *
             |> List.toSeq
         Some (accountId, transactions)
 
-let writeTransaction (connectionString:string) (accountId:Guid) (owner:string) (transaction:Transaction) =
-    let result = GetAccountId.Create(connectionString).Execute(owner)
+let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
     use connection = new SqlConnection(connectionString)
-    connection.Open()
-    if result.IsNone then
-        use accounts = new AccountsDb.dbo.Tables.Account()
-        accounts.AddRow(owner, accountId)
-        accounts.Update(connection) |> ignore
 
     let operationId = fromBankOperation transaction.Operation
     
     use transactions = new AccountsDb.dbo.Tables.AccountTransaction()
-    transactions.AddRow(accountId, transaction.Timestamp, operationId, transaction.Amount)
+    transactions.AddRow(account.Id, transaction.Timestamp, operationId, transaction.Amount)
     transactions.Update(connection) |> ignore
     ()
 
