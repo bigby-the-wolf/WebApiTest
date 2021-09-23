@@ -11,13 +11,10 @@ open WebApiTest.Domain.Services.AccountService
 open WebApiTest.Domain.Operations.AccountOperations
 open WebApiTest.Repositories.SqlServer.AccountRepository
 
-let flip f x y = f y x
+//let flip f x y = f y x
 
 type IModelParser<'From, 'To> =
-    abstract member Parse : 'From -> Result<'To, string>
-
-type Name = Name of string
-type Amount = Amount of decimal
+    abstract member Parse : unit -> 'To
 
 type Deposit =
     {
@@ -29,37 +26,58 @@ type Deposit =
 type DepositPost = 
     {
         OwnerName : string
-        Amount : int
+        Amount : string
     }
     member this.HasErrors() =
-        if String.IsNullOrWhiteSpace(this.OwnerName) then Error "Name can't be empty!"
-        elif this.Amount <= 0 then Error "Amount must be grater than 0!"
-        else Ok this
+        let amountResult depositPost = 
+            match Decimal.TryParse(depositPost.Amount) with
+            | (false, _) -> Error "Amount must be decimal!"
+            | (_, amount) when amount <= 0M -> Error "Amount must be greather than 0!"
+            | _ -> Ok depositPost
+        
+        let validation =
+            if String.IsNullOrWhiteSpace(this.OwnerName) then Error "Name can't be empty!"
+            else Ok this
+
+        validation
+        |> Result.bind amountResult
 
     interface IModelValidation<DepositPost> with
         member this.Validate() =
             this.HasErrors()
             |> Result.mapError(fun err -> RequestErrors.badRequest (text err))
 
-    //interface IModelParser<DepositDto
+    interface IModelParser<DepositPost, Deposit> with
+        member this.Parse() =
+            { Owner = Name this.OwnerName; Amount = Amount (Decimal.Parse(this.Amount)) }
 
 let getAccount(name:string) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         let config = ctx.GetService<IConfiguration>()
         let connectionString = config.["ConnectionStrings:AccountsDb"]
         
-        (name
-        |> getAccountAndTransactions connectionString
-        |> Option.map(buildAccount name)
-        |> Successful.OK) next ctx
+        let result =
+            (Name name)
+            |> getAccountAndTransactions connectionString
+            |> Result.map(buildAccount)
+        
+        match result with
+        | Ok account -> Successful.OK account next ctx
+        | Error err  -> RequestErrors.BAD_REQUEST err next ctx
 
 let depositInAccount(depositPost : DepositPost) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         let config = ctx.GetService<IConfiguration>()
         let connectionString = config.["ConnectionStrings:AccountsDb"]
+
+        let deposit = (depositPost :> IModelParser<DepositPost, Deposit>).Parse()
+
+        let result =
+            deposit.Owner
+            |> getAccountAndTransactions connectionString
+            |> Result.map(buildAccount)
+            |> Result.map(writeTransaction connectionString deposit.Amount)
         
-        (depositPost.OwnerName
-        |> getAccountAndTransactions connectionString
-        |> Option.map(buildAccount depositPost.OwnerName)
-        |> Option.map(writeTransaction connectionString  { Timestamp = DateTime.UtcNow; Operation = BankOperation.Deposit; Amount = Convert.ToDecimal(depositPost.Amount) })
-        |> Successful.OK) next ctx
+        match result with
+        | Ok _ -> Successful.OK "" next ctx
+        | Error err  -> RequestErrors.BAD_REQUEST err next ctx

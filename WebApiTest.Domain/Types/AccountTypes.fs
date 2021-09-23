@@ -4,6 +4,10 @@ open System
 
 type BankOperation = Deposit | Withdraw
 
+type Amount = Amount of decimal
+type Name = Name of string
+type ConnectionString = ConnectionString of string
+
 /// A customer of the bank.
 type Customer = { Name : string }
 /// An account held at the bank.

@@ -29,7 +29,7 @@ let auditAs bankOperation audit operation amount account accountId owner =
     updatedAccount
 
 /// Creates an account from a historical set of transactions
-let buildAccount owner (accountId, transactions) =
+let buildAccount (accountId, owner, transactions) =
     let openingAccount = classifyAccount { AccountId = accountId; Balance = 0M; Owner = { Name = owner } }
 
     transactions

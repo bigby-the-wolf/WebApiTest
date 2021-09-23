@@ -26,13 +26,13 @@ let fromBankOperation bankOperation =
         | Deposit -> DbOperations.Deposit
         | Withdraw -> DbOperations.Withdraw
 
-let getAccountAndTransactions (connectionString:string) (owner:string) : (Guid * Transaction seq) option =
-    let results = FindTransactionsByOwner.Create(connectionString).Execute(owner)
+let getAccountAndTransactions (connectionString:string) (Name name) : Result<(Guid * string * Transaction seq), string> =
+    let results = FindTransactionsByOwner.Create(connectionString).Execute(name)
                     |> List.ofSeq
     
     match results with
-    | [] -> None
-    | [ row ] when row.Amount.IsNone -> Some (row.AccountId, Seq.empty)
+    | [] -> Error "Owner not found"
+    | [ row ] when row.Amount.IsNone -> Ok (row.AccountId, name, Seq.empty)
     | (firstRow :: _) as results ->
         let accountId = firstRow.AccountId
         let transactions =
@@ -42,12 +42,13 @@ let getAccountAndTransactions (connectionString:string) (owner:string) : (Guid *
                     | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = amount; Operation = toBankOperation operationId }
                     | _ -> None)
             |> List.toSeq
-        Some (accountId, transactions)
+        Ok (accountId, name, transactions)
 
-let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
-    use connection = new SqlConnection(connectionString)
-
+let writeTransaction (connectionString:string) (Amount amount) (account:RatedAccount) =
+    let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Deposit; Amount = amount }
     let operationId = fromBankOperation transaction.Operation
+    
+    use connection = new SqlConnection(connectionString)
     
     use transactions = new AccountsDb.dbo.Tables.AccountTransaction()
     transactions.AddRow(account.Id, transaction.Timestamp, operationId, transaction.Amount)
