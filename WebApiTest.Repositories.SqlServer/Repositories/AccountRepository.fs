@@ -39,19 +39,17 @@ let getAccountAndTransactions (connectionString:string) (Name name) : Result<(Gu
             results
             |> List.choose (fun r -> 
                 match r.Amount, r.Timestamp, r.OperationId with
-                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = amount; Operation = toBankOperation operationId }
+                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = Amount amount; Operation = toBankOperation operationId }
                     | _ -> None)
             |> List.toSeq
         Ok (accountId, name, transactions)
 
-let writeTransaction (connectionString:string) (Amount amount) (account:RatedAccount) =
-    let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Deposit; Amount = amount }
+let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
     let operationId = fromBankOperation transaction.Operation
     
     use connection = new SqlConnection(connectionString)
-    
     use transactions = new AccountsDb.dbo.Tables.AccountTransaction()
-    transactions.AddRow(account.Id, transaction.Timestamp, operationId, transaction.Amount)
+    
+    transactions.AddRow(account.Id, transaction.Timestamp, operationId, transaction.Amount.asDecimal)
     transactions.Update(connection) |> ignore
-    ()
-
+    

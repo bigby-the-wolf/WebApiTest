@@ -8,7 +8,6 @@
   <ItemGroup>
     <Compile Include="Types\AccountTypes.fs" />
     <Compile Include="Operations\AccountOperations.fs" />
-    <Compile Include="Services\AccountService.fs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

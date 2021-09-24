@@ -36,6 +36,13 @@ let buildAccount (accountId, owner, transactions) =
     |> Seq.sortBy(fun txn -> txn.Timestamp)
     |> Seq.fold(fun account txn ->
         match txn.Operation, account with
-        | Deposit, _ -> account |> deposit txn.Amount
-        | Withdraw, InCredit account -> account |> withdraw txn.Amount
+        | Deposit, _ -> account |> deposit txn.Amount.asDecimal
+        | Withdraw, InCredit account -> account |> withdraw txn.Amount.asDecimal
         | Withdraw, Overdrawn _ -> account) openingAccount
+
+let tryWithdraw transaction (account:RatedAccount) =
+    match transaction.Operation with
+    | Deposit -> Ok account
+    | Withdraw ->
+        if account.Balance <= 0M then Error "Can't withdraw when balance is bellow 0!"
+        else Ok account
