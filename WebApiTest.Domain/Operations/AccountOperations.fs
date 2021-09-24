@@ -9,6 +9,8 @@ let private classifyAccount account =
 
 /// Withdraws an amount of an account (if there are sufficient funds)
 let withdraw amount (CreditAccount account) =
+    let amount = Amount.value amount
+
     { account with Balance = account.Balance - amount }
     |> classifyAccount
 
@@ -18,6 +20,8 @@ let deposit amount account =
         match account with
         | Overdrawn account -> account
         | InCredit (CreditAccount account) -> account
+    let amount = Amount.value amount
+    
     { account with Balance = account.Balance + amount }
     |> classifyAccount
 
@@ -36,8 +40,8 @@ let buildAccount (accountId, owner, transactions) =
     |> Seq.sortBy(fun txn -> txn.Timestamp)
     |> Seq.fold(fun account txn ->
         match txn.Operation, account with
-        | Deposit, _ -> account |> deposit txn.Amount.asDecimal
-        | Withdraw, InCredit account -> account |> withdraw txn.Amount.asDecimal
+        | Deposit, _ -> account |> deposit txn.Amount
+        | Withdraw, InCredit account -> account |> withdraw txn.Amount
         | Withdraw, Overdrawn _ -> account) openingAccount
 
 let tryWithdraw transaction (account:RatedAccount) =

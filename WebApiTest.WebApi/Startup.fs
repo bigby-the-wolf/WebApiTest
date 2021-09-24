@@ -25,8 +25,8 @@ module WebApp =
 
             POST >=> choose [
                 subRoute "/accounts" (choose [
-                    route "/deposit" >=> bindJson<DepositPost> (validateModel AccountsController.depositInAccount)
-                    route "/withdrawal" >=> bindJson<WithdrawalPost> (validateModel AccountsController.withdrawFromAccount)
+                    route "/deposit" >=> bindJson<DepositPost> (fun depositPost -> AccountsController.depositInAccount(depositPost))
+                    route "/withdrawal" >=> bindJson<WithdrawalPost> (fun withdrawalPost -> AccountsController.withdrawFromAccount(withdrawalPost))
                 ])
             ]
 

@@ -26,9 +26,13 @@ let fromBankOperation bankOperation =
         | Deposit -> DbOperations.Deposit
         | Withdraw -> DbOperations.Withdraw
 
-let getAccountAndTransactions (connectionString:string) (Name name) : Result<(Guid * string * Transaction seq), string> =
-    let results = FindTransactionsByOwner.Create(connectionString).Execute(name)
-                    |> List.ofSeq
+let getAccountAndTransactions (connectionString:string) (name:Name._T) : Result<(Guid * string * Transaction seq), string> =
+    let results = 
+        name
+        |> Name.apply (FindTransactionsByOwner.Create(connectionString).Execute)
+        |> List.ofSeq
+
+    let name = Name.value name
     
     match results with
     | [] -> Error "Owner not found"
@@ -39,17 +43,18 @@ let getAccountAndTransactions (connectionString:string) (Name name) : Result<(Gu
             results
             |> List.choose (fun r -> 
                 match r.Amount, r.Timestamp, r.OperationId with
-                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = Amount amount; Operation = toBankOperation operationId }
+                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = Amount.Amount amount; Operation = toBankOperation operationId }
                     | _ -> None)
             |> List.toSeq
         Ok (accountId, name, transactions)
 
 let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
     let operationId = fromBankOperation transaction.Operation
+    let amount = Amount.value transaction.Amount
     
     use connection = new SqlConnection(connectionString)
     use transactions = new AccountsDb.dbo.Tables.AccountTransaction()
     
-    transactions.AddRow(account.Id, transaction.Timestamp, operationId, transaction.Amount.asDecimal)
+    transactions.AddRow(account.Id, transaction.Timestamp, operationId, amount)
     transactions.Update(connection) |> ignore
     

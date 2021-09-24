@@ -16,47 +16,51 @@ let getAccount(name:string) : HttpHandler =
         let connectionString = config.["ConnectionStrings:AccountsDb"]
         
         let result =
-            (Name name)
-            |> getAccountAndTransactions connectionString
+            Name.parse(name)
+            |> Result.bind(getAccountAndTransactions connectionString)
             |> Result.map(buildAccount)
         
         match result with
         | Ok account -> Successful.OK account next ctx
         | Error err  -> RequestErrors.BAD_REQUEST err next ctx
 
-let depositInAccount(depositPost : DepositPost) : HttpHandler =
+let depositInAccount(depositPost : IModelParser<DepositPost, Deposit>) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         let config = ctx.GetService<IConfiguration>()
         let connectionString = config.["ConnectionStrings:AccountsDb"]
 
-        let deposit = (depositPost :> IModelParser<DepositPost, Deposit>).Parse()
-        let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Deposit; Amount = deposit.Amount }
-
-        let result =
-            deposit.Owner
-            |> getAccountAndTransactions connectionString
-            |> Result.map(buildAccount)
-            |> Result.map(writeTransaction connectionString transaction)
-        
-        match result with
-        | Ok _ -> Successful.OK "" next ctx
+        match depositPost.Parse() with
         | Error err  -> RequestErrors.BAD_REQUEST err next ctx
+        | Ok deposit ->
+            let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Deposit; Amount = deposit.Amount }
 
-let withdrawFromAccount(withrawalPost : WithdrawalPost) : HttpHandler =
+            let result =
+                deposit.Owner
+                |> getAccountAndTransactions connectionString
+                |> Result.map(buildAccount)
+                |> Result.map(writeTransaction connectionString transaction)
+        
+            match result with
+            | Ok _ -> Successful.OK "" next ctx
+            | Error err  -> RequestErrors.BAD_REQUEST err next ctx
+
+let withdrawFromAccount(withrawalPost : IModelParser<WithdrawalPost, Withdrawal>) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         let config = ctx.GetService<IConfiguration>()
         let connectionString = config.["ConnectionStrings:AccountsDb"]
 
-        let withdrawal = (withrawalPost :> IModelParser<WithdrawalPost, Withdrawal>).Parse()
-        let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Withdraw; Amount = withdrawal.Amount }
-
-        let result =
-            withdrawal.Owner
-            |> getAccountAndTransactions connectionString
-            |> Result.map(buildAccount)
-            |> Result.bind(tryWithdraw transaction)
-            |> Result.map(writeTransaction connectionString transaction)
-        
-        match result with
-        | Ok _ -> Successful.OK "" next ctx
+        match withrawalPost.Parse() with
         | Error err  -> RequestErrors.BAD_REQUEST err next ctx
+        | Ok withdrawal ->
+            let transaction = { Timestamp = DateTime.UtcNow; Operation = BankOperation.Withdraw; Amount = withdrawal.Amount }
+
+            let result =
+                withdrawal.Owner
+                |> getAccountAndTransactions connectionString
+                |> Result.map(buildAccount)
+                |> Result.bind(tryWithdraw transaction)
+                |> Result.map(writeTransaction connectionString transaction)
+        
+            match result with
+            | Ok _ -> Successful.OK "" next ctx
+            | Error err  -> RequestErrors.BAD_REQUEST err next ctx
