@@ -9,6 +9,8 @@ let private classifyAccount account =
 
 /// Withdraws an amount of an account (if there are sufficient funds)
 let withdraw amount (CreditAccount account) =
+    let amount = Amount.value amount
+
     { account with Balance = account.Balance - amount }
     |> classifyAccount
 
@@ -18,6 +20,8 @@ let deposit amount account =
         match account with
         | Overdrawn account -> account
         | InCredit (CreditAccount account) -> account
+    let amount = Amount.value amount
+    
     { account with Balance = account.Balance + amount }
     |> classifyAccount
 
@@ -29,7 +33,7 @@ let auditAs bankOperation audit operation amount account accountId owner =
     updatedAccount
 
 /// Creates an account from a historical set of transactions
-let buildAccount owner (accountId, transactions) =
+let buildAccount (accountId, owner, transactions) =
     let openingAccount = classifyAccount { AccountId = accountId; Balance = 0M; Owner = { Name = owner } }
 
     transactions
@@ -39,3 +43,10 @@ let buildAccount owner (accountId, transactions) =
         | Deposit, _ -> account |> deposit txn.Amount
         | Withdraw, InCredit account -> account |> withdraw txn.Amount
         | Withdraw, Overdrawn _ -> account) openingAccount
+
+let tryWithdraw transaction (account:RatedAccount) =
+    match transaction.Operation with
+    | Deposit -> Ok account
+    | Withdraw ->
+        if account.Balance <= 0M then Error "Can't withdraw when balance is bellow 0!"
+        else Ok account

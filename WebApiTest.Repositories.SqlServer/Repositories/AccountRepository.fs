@@ -26,37 +26,35 @@ let fromBankOperation bankOperation =
         | Deposit -> DbOperations.Deposit
         | Withdraw -> DbOperations.Withdraw
 
-let getAccountAndTransactions (connectionString:string) (owner:string) : (Guid * Transaction seq) option =
-    let results = FindTransactionsByOwner.Create(connectionString).Execute(owner)
-                    |> List.ofSeq
+let getAccountAndTransactions (connectionString:string) (name:Name._T) : Result<(Guid * string * Transaction seq), string> =
+    let results = 
+        name
+        |> Name.apply (FindTransactionsByOwner.Create(connectionString).Execute)
+        |> List.ofSeq
+
+    let name = Name.value name
     
     match results with
-    | [] -> None
-    | [ row ] when row.Amount.IsNone -> Some (row.AccountId, Seq.empty)
+    | [] -> Error "Owner not found"
+    | [ row ] when row.Amount.IsNone -> Ok (row.AccountId, name, Seq.empty)
     | (firstRow :: _) as results ->
         let accountId = firstRow.AccountId
         let transactions =
             results
             |> List.choose (fun r -> 
                 match r.Amount, r.Timestamp, r.OperationId with
-                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = amount; Operation = toBankOperation operationId }
+                    | Some amount, Some timestamp, Some operationId -> Some { Timestamp = timestamp; Amount = Amount.Amount amount; Operation = toBankOperation operationId }
                     | _ -> None)
             |> List.toSeq
-        Some (accountId, transactions)
+        Ok (accountId, name, transactions)
 
-let writeTransaction (connectionString:string) (accountId:Guid) (owner:string) (transaction:Transaction) =
-    let result = GetAccountId.Create(connectionString).Execute(owner)
-    use connection = new SqlConnection(connectionString)
-    connection.Open()
-    if result.IsNone then
-        use accounts = new AccountsDb.dbo.Tables.Account()
-        accounts.AddRow(owner, accountId)
-        accounts.Update(connection) |> ignore
-
+let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
     let operationId = fromBankOperation transaction.Operation
+    let amount = Amount.value transaction.Amount
     
+    use connection = new SqlConnection(connectionString)
     use transactions = new AccountsDb.dbo.Tables.AccountTransaction()
-    transactions.AddRow(accountId, transaction.Timestamp, operationId, transaction.Amount)
+    
+    transactions.AddRow(account.Id, transaction.Timestamp, operationId, amount)
     transactions.Update(connection) |> ignore
-    ()
-
+    

@@ -6,11 +6,8 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AppSettingsParser.fs" />
-    <Compile Include="WeatherForecast.fs" />
-    <Compile Include="CompositionRoot.fs" />
+    <Compile Include="Models.fs" />
     <Compile Include="Controllers\AccountsController.fs" />
-    <Compile Include="Controllers/WeatherForecastController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
