@@ -1,9 +1,11 @@
 ﻿module WebApiTest.WebApi.Models
 
 open WebApiTest.Domain.Types.AccountTypes
+open WebApiTest.Infrastructure.Utils.HelperFunctions
 
 type IModelParser<'From, 'To> =
     abstract member Parse : unit -> Result<'To, string>
+
 
 [<CLIMutable>]
 type DepositPost = 
@@ -16,7 +18,7 @@ type DepositPost =
         member this.Parse() =
             Name.parse(this.OwnerName)
             |> Result.map(Deposit.createDeposit)
-            |> Result.bind(fun f -> Amount.parse(this.Amount) |> Result.map f)
+            |> Result.bind(flip Result.map (Amount.parse(this.Amount)))
             
 
 [<CLIMutable>]
@@ -30,4 +32,4 @@ type WithdrawalPost =
         member this.Parse() =
             Name.parse(this.OwnerName)
             |> Result.map(Withdrawal.createWithdrawal)
-            |> Result.bind(fun f -> Amount.parse(this.Amount) |> Result.map f)
+            |> Result.bind(flip Result.map (Amount.parse(this.Amount)))
