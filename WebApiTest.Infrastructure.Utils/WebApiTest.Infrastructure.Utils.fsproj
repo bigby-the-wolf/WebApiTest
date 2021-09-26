@@ -6,6 +6,7 @@
     <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Reader.fs" />
     <Compile Include="HelperFunctions.fs" />
     <Compile Include="Extensions.fs" />
   </ItemGroup>

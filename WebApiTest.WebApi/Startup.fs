@@ -18,7 +18,6 @@ module WebApp =
 
             GET >=> choose [
                 subRoute "/accounts" (choose [
-                    route "/test" >=> text "OK"
                     routef "/%s" AccountsController.getAccount
                 ])
             ]
