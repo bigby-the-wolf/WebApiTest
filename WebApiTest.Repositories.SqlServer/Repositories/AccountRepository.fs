@@ -66,14 +66,3 @@ let writeTransaction (connectionString:string) (transaction:Transaction) (accoun
         |> Async.RunSynchronously
         |> ignore
     }
-    
-    //let! result = 
-    //    InsertTransaction
-    //        .Create(connectionString)
-    //        .AsyncExecute(
-    //            account.Id,
-    //            DateTime.UtcNow,
-    //            operationId,
-    //            amount)
-    
-    //return Ok result

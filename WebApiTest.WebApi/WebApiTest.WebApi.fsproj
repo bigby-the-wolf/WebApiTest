@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebApiTest.Domain\WebApiTest.Domain.fsproj" />
+    <ProjectReference Include="..\WebApiTest.Infrastructure.Utils\WebApiTest.Infrastructure.Utils.fsproj" />
     <ProjectReference Include="..\WebApiTest.Repositories.SqlServer\WebApiTest.Repositories.SqlServer.fsproj" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
