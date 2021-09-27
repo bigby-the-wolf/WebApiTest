@@ -52,9 +52,9 @@ type Withdrawal =
     with static member createWithdrawal o a = { Owner = o; Amount = a}
 
 /// A customer of the bank.
-type Customer = { Name : string }
+type Customer = { Name : Name._T }
 /// An account held at the bank.
-type Account = { AccountId : Guid; Owner : Customer; Balance : decimal }
+type Account = { AccountId : Guid; Owner : Customer; Balance : Amount._T }
 /// A single transaction that has occurred.
 type Transaction = { Timestamp : DateTime; Operation : BankOperation; Amount : Amount._T }
 

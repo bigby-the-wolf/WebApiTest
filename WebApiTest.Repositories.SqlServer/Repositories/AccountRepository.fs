@@ -39,8 +39,7 @@ let getAccountAndTransactions (connectionString:string) (name:Name._T) =
                 |> Name.apply (FindTransactionsByOwner.Create(connectionString).AsyncExecute)
             let transactionsByOwner = results |> List.ofSeq
 
-            let name = Name.value name
-            logger.LogInformation(sprintf "The number of transactions for %s is %i" name transactionsByOwner.Length)
+            logger.LogInformation(sprintf "The number of transactions for %s is %i" (Name.value name) transactionsByOwner.Length)
 
             match transactionsByOwner with
             | [] -> return Error "Owner not found"
@@ -57,7 +56,6 @@ let getAccountAndTransactions (connectionString:string) (name:Name._T) =
                 return Ok (accountId, name, transactions)
         }
     }
-    
 
 let writeTransaction (connectionString:string) (transaction:Transaction) (account:RatedAccount) =
     async {
