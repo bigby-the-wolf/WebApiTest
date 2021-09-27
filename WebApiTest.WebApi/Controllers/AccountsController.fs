@@ -9,6 +9,7 @@ open System
 open WebApiTest.Domain.Types.AccountTypes
 open WebApiTest.Domain.Operations.AccountOperations
 open WebApiTest.Infrastructure.Utils.HelperFunctions
+open WebApiTest.Infrastructure.Utils.Reader
 open WebApiTest.Infrastructure.Utils.ResultExtensions
 open WebApiTest.Repositories.SqlServer.AccountRepository
 open WebApiTest.WebApi.Models
@@ -18,11 +19,12 @@ let getAccount(name:string) : HttpHandler =
         task {
             let config = ctx.GetService<IConfiguration>()
             let connectionString = config.["ConnectionStrings:AccountsDb"]
+            let logger = ctx.GetLogger("AccountsController.getAccount")
 
             let result =
                 Name.parse(name)
                 |> toAsync
-                |> Result.bindAsync(getAccountAndTransactions connectionString)
+                |> Result.bindAsync(getAccountAndTransactions connectionString >> Reader.run logger)
                 |> Result.mapAsync(buildAccount)
                 |> Async.RunSynchronously
 
@@ -36,6 +38,7 @@ let depositInAccount(depositPost : IModelParser<DepositPost, Deposit>) : HttpHan
         task {
             let config = ctx.GetService<IConfiguration>()
             let connectionString = config.["ConnectionStrings:AccountsDb"]
+            let logger = ctx.GetLogger("AccountsController.getAccount")
 
             match depositPost.Parse() with
             | Error err  -> return! RequestErrors.BAD_REQUEST err next ctx
@@ -46,7 +49,7 @@ let depositInAccount(depositPost : IModelParser<DepositPost, Deposit>) : HttpHan
                     deposit.Owner
                     |> Ok
                     |> toAsync
-                    |> Result.bindAsync(getAccountAndTransactions connectionString)
+                    |> Result.bindAsync(getAccountAndTransactions connectionString >> Reader.run logger)
                     |> Result.mapAsync(buildAccount)
                     |> Result.mapAsync(writeTransaction connectionString transaction >> Async.RunSynchronously)
                     |> Async.RunSynchronously
@@ -61,6 +64,7 @@ let withdrawFromAccount(withrawalPost : IModelParser<WithdrawalPost, Withdrawal>
         task {
             let config = ctx.GetService<IConfiguration>()
             let connectionString = config.["ConnectionStrings:AccountsDb"]
+            let logger = ctx.GetLogger("AccountsController.getAccount")
 
             match withrawalPost.Parse() with
             | Error err  -> return! RequestErrors.BAD_REQUEST err next ctx
@@ -71,7 +75,7 @@ let withdrawFromAccount(withrawalPost : IModelParser<WithdrawalPost, Withdrawal>
                     withdrawal.Owner
                     |> Ok
                     |> toAsync
-                    |> Result.bindAsync(getAccountAndTransactions connectionString)
+                    |> Result.bindAsync(getAccountAndTransactions connectionString >> Reader.run logger)
                     |> Result.mapAsync(buildAccount)
                     |> Result.bindAsync(tryWithdraw transaction >> toAsync)
                     |> Result.mapAsync(writeTransaction connectionString transaction >> Async.RunSynchronously)
