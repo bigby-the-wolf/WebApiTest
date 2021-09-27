@@ -10,7 +10,7 @@ open WebApiTest.WebApi.Controllers
 open WebApiTest.WebApi.Models
 
 module WebApp =
-    let parsingError err = RequestErrors.BAD_REQUEST err
+    let private parsingError err = RequestErrors.BAD_REQUEST err
 
     let webApp =
         choose [

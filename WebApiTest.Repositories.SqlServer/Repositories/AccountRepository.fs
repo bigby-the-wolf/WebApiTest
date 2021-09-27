@@ -40,7 +40,7 @@ let getAccountAndTransactions (connectionString:string) (name:Name._T) =
             let transactionsByOwner = results |> List.ofSeq
 
             let name = Name.value name
-            logger.LogError(name)
+            logger.LogInformation(sprintf "The number of transactions for %s is %i" name transactionsByOwner.Length)
 
             match transactionsByOwner with
             | [] -> return Error "Owner not found"
