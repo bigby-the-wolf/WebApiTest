@@ -4,10 +4,18 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Logging
 open Giraffe
+open System
 
 open WebApiTest.WebApi.Controllers
 open WebApiTest.WebApi.Models
+
+module Configurations =
+     let errorHandler (ex : Exception) (logger : ILogger) =
+         logger.LogError(EventId(), ex, "An unhandled exception has occurred while executing the request.")
+         clearResponse
+         >=> ServerErrors.INTERNAL_ERROR ex.Message
 
 module WebApp =
     let private parsingError err = RequestErrors.BAD_REQUEST err
@@ -41,4 +49,6 @@ type Startup(configuration: IConfiguration) =
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
-        app.UseGiraffe WebApp.webApp
+        app
+            .UseGiraffeErrorHandler(Configurations.errorHandler)
+            .UseGiraffe WebApp.webApp
