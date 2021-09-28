@@ -6,6 +6,11 @@
     <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="docker-compose.yml" />
+    <Content Include="Scripts\PostDeployment.sql" />
+    <None Include="Scripts\Operation.sql" />
+    <None Include="Scripts\AccountTransaction.sql" />
+    <None Include="Scripts\Account.sql" />
     <Compile Include="Repositories\AccountRepository.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,15 @@
+﻿# Use this to spin up a container with MSSQL Server
+# Have to manually add the tables afterwards via some tool like MS SQL Server Management Studio
+version: "3.3"
+services:
+  mssql:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    container_name: mssql
+    hostname: mssql
+    environment:
+      SA_PASSWORD: "Pass123!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    restart: unless-stopped    
+    ports:
+      - "11433:1433"
